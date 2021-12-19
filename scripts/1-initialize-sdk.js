@@ -10,7 +10,7 @@ if (!process.env.PRIVATE_KEY || process.env.PRIVATE_KEY == "") {
   console.log("🔴 Private key not found.")
 }
 
-if (!process.env.ALCHEMY_API || process.env.ALCHEMY_API == "") {
+if (!process.env.ALCHEMY_API_URL || process.env.ALCHEMY_API_URL == "") {
   console.log("🔴 Alchemy API not found.")
 }
 
