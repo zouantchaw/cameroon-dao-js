@@ -68,7 +68,7 @@ const App = () => {
       .getAllHolderBalances()
       .then((amounts) => {
         console.log("👜 Amounts", amounts)
-        setMemberTokenAmounts(amounts)
+        setMemberTokensAmounts(amounts)
       })
       .catch((err) => {
         console.error("failed to get token amounts", err);
