@@ -18,8 +18,19 @@ const App = () => {
   console.log("👋 Address:", address)
   console.log("provider:", provider)
 
+  // signer is required to sign transactions on the blockchain
+  const signer = provider ? provider.getSigner() : undefined;
+
   // state variable for us to know if user has native NFT
   const [hasClaimedNFT, setHasClaimedNFT] = useState(false);
+
+  // loading state while the NFT is minted
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  useEffect(() => {
+    // pass signer to sdk, enabling app to interact with deployed contract
+    sdk.setProviderOrSigner(signer);
+  }, [signer]);
 
   useEffect(() => {
     // If wallet if not connected, exit
@@ -57,9 +68,36 @@ const App = () => {
       </div>
     )
   }
+
+  const mintNFT = () => {
+    setIsClaiming(true);
+    // call bundleDropModule.claim("0", 1) to mint nft to users wallet
+    bundleDropModule
+    .claim("0", 1)
+    .catch((err) => {
+      console.error("failed to claim", err);
+      setIsClaiming(false);
+    })
+    .finally(() => {
+      // stop loading state
+      setIsClaiming(false);
+      // set claiming state
+      setHasClaimedNFT(true);
+      // show user nft link
+      console.log(`Mint Successful! Check it out on OpenSea: https://testnets.opensea.io/assets/${bundleDropModule.address}/0`);
+    });
+  }
+
+  // Render mint nft screen
   return (
-    <div className="landing">
-      <h1>Wallet connected to app... now what</h1>
+    <div className="mint-nft">
+      <h1>Mint your free 🇨🇲DAO Membership NFT</h1>
+      <button
+        disabled={isClaiming}
+        onClick={() => mintNFT()}
+      >
+        {isClaiming ? "Minting..." : "Mint your nft (FREE)"}
+      </button>
     </div>
   );
 };
