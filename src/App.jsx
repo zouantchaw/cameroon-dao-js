@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-
 // import thirdweb
 import { useWeb3 } from "@3rdweb/hooks";
-
 import { ThirdwebSDK } from "@3rdweb/sdk";
+import { ethers } from "ethers";
 
 
 // instantiate sdk on rinkeby
@@ -11,6 +10,8 @@ const sdk = new ThirdwebSDK("rinkeby")
 
 // refrence to ERC-1155 contract
 const bundleDropModule = sdk.getBundleDropModule("0x635a3DE9D799C62CA88fF62a19fC51AA95EA9690");
+
+const tokenModule = sdk.getTokenModule("0xAAdCB2BeF5c0f54B14503faEAd0C2fb5D1aE5A2E")
 
 const App = () => {
   // use connectWallet hook from third web
@@ -26,6 +27,66 @@ const App = () => {
 
   // loading state while the NFT is minted
   const [isClaiming, setIsClaiming] = useState(false);
+
+  // Stores amount of tokens each member has in state
+  const [memberTokenAmounts, setMemberTokensAmounts] = useState({});
+
+  // array holding all of our members addresses
+  const [memberAddresses, setMemberAddresses] = useState([]);
+
+  // function to shorten wallet address
+  const shortenAddress = (str) => {
+    return str.substring(0, 6) + "..." + str.substring(str.length - 4);
+  };
+
+  // get all addresses of members holding member NFT
+  useEffect(() => {
+    if (!hasClaimedNFT) {
+      return;
+    }
+
+    // get users with tokenId 0
+    bundleDropModule
+    .getAllClaimerAddresses("0")
+    .then((addresses) => {
+      console.log("🚀 Members addresses", addresses)
+      setMemberAddresses(addresses);
+    })
+    .catch((err) => {
+      console.error("failed to get member list", err);
+    });
+  }, [hasClaimedNFT]);
+
+  // gets #'s of token each member holds'
+  useEffect(() => {
+    if (!hasClaimedNFT) {
+      return;
+    }
+
+    // Get all address balances
+    tokenModule
+      .getAllHolderBalances()
+      .then((amounts) => {
+        console.log("👜 Amounts", amounts)
+        setMemberTokenAmounts(amounts)
+      })
+      .catch((err) => {
+        console.error("failed to get token amounts", err);
+      });
+  }, [hasClaimedNFT]);
+
+  const memberList = useMemo(() => {
+    return memberAddresses.map((address) => {
+      return {
+        address,
+        tokenAmount: ethers.utils.formatUnits(
+          // if address isn't in memberTokenAmounts, they don't hold any $CMR tokens
+          memberTokenAmounts[address] || 0,
+          18,
+        ),
+      };
+    });
+  }, [memberAddresses, memberTokenAmounts]);
 
   useEffect(() => {
     // pass signer to sdk, enabling app to interact with deployed contract
