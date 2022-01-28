@@ -4,7 +4,7 @@ body {
   font-family: Inter, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: radial-gradient(#e66465, #9198e5);;
+  background: radial-gradient(#e66465, #9198e5);
   color: #fff;
   overflow-x: hidden;
 }
